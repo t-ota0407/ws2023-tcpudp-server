@@ -56,7 +56,7 @@ export class UDPSocket {
   public startSendingDatagram() {
     this.sendDatagramInterval = setInterval(() => {
       const activeUsers = SimpleDatabase.getInstance().getActiveUsersClone();
-      const udpDownloadDatagram = UDPDownloadDatagram.fromUserList([...activeUsers, ...activeUsers, ...activeUsers]);
+      const udpDownloadDatagram = UDPDownloadDatagram.fromUserList(activeUsers);
       activeUsers.forEach((user: User) => {
         const message = Buffer.from(JSON.stringify(udpDownloadDatagram));
         const targetPort = user.getPortNumber();
