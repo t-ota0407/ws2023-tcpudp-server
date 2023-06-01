@@ -45,8 +45,9 @@ export class UDPSocket {
         this.startSendingDatagram();
       }
 
+      user.updatedAt = new Date();
       user.setPosition(uploadedData.x, uploadedData.y, uploadedData.z);
-      user.setIpAddress(rinfo.address);
+      user.setRemoteInfo(rinfo.address, rinfo.port);
     });
 
     return this.socket.bind(portNumber, callback);
@@ -58,7 +59,7 @@ export class UDPSocket {
       const udpDownloadDatagram = UDPDownloadDatagram.fromUserList([...activeUsers, ...activeUsers, ...activeUsers]);
       activeUsers.forEach((user: User) => {
         const message = Buffer.from(JSON.stringify(udpDownloadDatagram));
-        const targetPort = 30000;
+        const targetPort = user.getPortNumber();
         const targetAddress = user.getIpAddress();
         this.socket.send(message, 0, message.length, targetPort, targetAddress);
       });

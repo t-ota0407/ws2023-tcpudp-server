@@ -32,7 +32,7 @@ export class SimpleDatabase {
   public CheckDeactivatedUser() {
     const now = new Date();
     this.activeUsers = this.activeUsers.filter((user: User) => {
-      const timeDifference  = Math.abs(user.startedAt.getTime() - now.getTime());
+      const timeDifference  = Math.abs(user.updatedAt.getTime() - now.getTime());
       return timeDifference < this.deactivationWaitingTime;
     });
   }
