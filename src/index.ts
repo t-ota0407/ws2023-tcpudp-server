@@ -2,12 +2,16 @@ import express from "express";
 import { UDPSocket } from "./udpSocket/udp";
 import { connectionRouter } from "./tcpHttp/routers/connectionRouter";
 import { DataSource, DataSourceOptions } from "typeorm";
+import { schedule } from "node-cron";
+import { SimpleDatabase } from "./database/simpleDatabase";
 
 class Server {
   private app: express.Application;
 
   private readonly httpPort = Number(process.env.HTTP_PORT) || 8080;
   private readonly socketPort = Number(process.env.SOCKET_PORT) || 3000
+
+  private readonly udpSocket = new UDPSocket();
 
   constructor() {
     this.app = express();
@@ -24,6 +28,7 @@ class Server {
     // await this.connectToDBServer();
     this.startUDPSocket();
     this.startTCPHTTP();
+    this.schedulePeriodicTasks();
   }
 
   private async connectToDBServer(): Promise<void> {
@@ -53,11 +58,9 @@ class Server {
   }
 
   private startUDPSocket() {
-    const udpSocket = new UDPSocket();
-    udpSocket.listen(this.socketPort, () => {
+    this.udpSocket.listen(this.socketPort, () => {
       console.log(`UDP socket connection port is ${this.socketPort}`);
     });
-    udpSocket.sendPeriodically();
   }
 
   private startTCPHTTP() {
@@ -66,6 +69,18 @@ class Server {
     this.app.listen(this.httpPort, () => {
       console.log(`HTTP connection port is ${this.httpPort}`);
     }).setTimeout(10 * 1000);
+  }
+
+  private schedulePeriodicTasks() {
+    schedule('* */1 * * * *', () => {
+      SimpleDatabase.getInstance().CheckDeactivatedUser();
+    });
+
+    schedule('* */1 * * * *', () => {
+      if (SimpleDatabase.getInstance().getActiveUsersClone().length === 0) {
+        this.udpSocket.stopSendingDatagram();
+      };
+    });
   }
 }
 

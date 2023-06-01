@@ -1,9 +1,9 @@
 import { check } from "express-validator";
 
 export const start = [
-  check("id").exists(),
+  check("username").exists(),
 ];
 
 export const end = [
-  check("id").exists(),
+  check("uuid").exists(),
 ];

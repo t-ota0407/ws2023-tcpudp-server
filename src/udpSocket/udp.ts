@@ -1,14 +1,20 @@
 import dgram, { Socket } from "node:dgram";
-import { SocketActiveConnections } from "./socketActiveConnections";
 import { schedule } from "node-cron";
+import { SimpleDatabase } from "../database/simpleDatabase";
+import { UDPUploadDatagram } from "./udpUploadDatagram";
+import { User } from "../database/entities/user";
+import { UDPDownloadDatagram } from "./udpDownloadDatagram";
 
 export class UDPSocket {
   private socket: dgram.Socket;
 
-  private rinfoaddress: string | undefined = undefined;
+  private sendDatagramInterval: NodeJS.Timeout | null;
 
   constructor() {
     this.socket = dgram.createSocket('udp4');
+    this.sendDatagramInterval = null;
+
+    this.startSendingDatagram();
   }
 
   public listen(portNumber: number, callback?: () => void) {
@@ -22,36 +28,48 @@ export class UDPSocket {
     });
 
     this.socket.on('message', (msg, rinfo) => {
-      this.rinfoaddress = rinfo.address;
       console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
-      const uuid: string = "";
-
-      if (SocketActiveConnections.instance.isExistent(uuid)) {
-        SocketActiveConnections.instance.add();
+      const uploadedData = UDPUploadDatagram.fromJson(msg.toString());
+      if (uploadedData === undefined) {
+        return console.log("parseに失敗したことを知らせるエラーを出す");
       }
+
+      const uuid = uploadedData.uuid;
+
+      const user = SimpleDatabase.getInstance().FindUser(uuid);
+      if (user === undefined) {
+        return console.log("postが叩けていないことを知らせるエラーを出す");
+      }
+
+      if (this.sendDatagramInterval === null) {
+        this.startSendingDatagram();
+      }
+
+      user.setPosition(uploadedData.x, uploadedData.y, uploadedData.z);
+      user.setIpAddress(rinfo.address);
     });
 
     return this.socket.bind(portNumber, callback);
   }
 
-  public sendPeriodically() {
-    // schedule('*/5, * * * * *', () => {
-    //   SocketActiveConnections.instance.connections.forEach(connection => {
-    //     const message = Buffer.from("hello");
-    //     const targetPort = 3001;
-    //     const targetAddress = connection.client.address;
-    //     connection.client.send(message, 0, message.length, targetPort, targetAddress);
-    //   })
-    // })
-    schedule('*/10 * * * * *', () => {
-      //const connection = dgram.createSocket('udp4');
-      if (this.rinfoaddress !== undefined) {
-        const message = Buffer.from("hello");
+  public startSendingDatagram() {
+    this.sendDatagramInterval = setInterval(() => {
+      const activeUsers = SimpleDatabase.getInstance().getActiveUsersClone();
+      const udpDownloadDatagram = UDPDownloadDatagram.fromUserList([...activeUsers, ...activeUsers, ...activeUsers]);
+      activeUsers.forEach((user: User) => {
+        const message = Buffer.from(JSON.stringify(udpDownloadDatagram));
         const targetPort = 30000;
-        const targetAddress = this.rinfoaddress;
+        const targetAddress = user.getIpAddress();
         this.socket.send(message, 0, message.length, targetPort, targetAddress);
-        console.log("send");
-      }
-    });
+      });
+      console.log("send");
+    }, 500);
+  }
+
+  public stopSendingDatagram() {
+    if (this.sendDatagramInterval) {
+      clearInterval(this.sendDatagramInterval);
+      this.sendDatagramInterval = null;
+    }
   }
 }

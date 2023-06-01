@@ -3,12 +3,13 @@ import { validationResult } from "express-validator";
 
 import * as connectionController from "../controllers/connectionController";
 import * as connectionValidator from "../validations/connectionValidator";
+import passport from "passport";
 
 export const connectionRouter = Router();
 
 connectionRouter.post(
-  "/communication-start",
-  //connectionValidator.start,
+  "/start",
+  connectionValidator.start,
   (req: Request, res: Response) => {
     const errors = validationResult(req);
     
@@ -21,14 +22,20 @@ connectionRouter.post(
 )
 
 connectionRouter.post(
-  "/communication-end",
+  "/end",
   connectionValidator.end,
   (req: Request, res: Response) => {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
-      return res.status(400).json({});
+      console.log("validationerror");
+      return res.status(400).send();
     }
+
+    passport.authenticate("jwt", {session: false}, (err: Error | null, user: object | false | undefined, info: object | undefined) => {
+      if (!user) {
+        return res.status(401).send();
+      }
+    });
 
     connectionController.end(req, res);
   }
