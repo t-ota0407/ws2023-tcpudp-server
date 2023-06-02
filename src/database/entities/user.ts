@@ -1,14 +1,13 @@
-
 export class User{
   public readonly uuid: string;
   public readonly username: string;
-  public readonly startedAt: Date;
+  private readonly startedAt: Date;
   
-  public updatedAt: Date;
+  private _updatedAt: Date;
 
-  private positionX: number;
-  private positionY: number;
-  private positionZ: number;
+  private _positionX: number;
+  private _positionY: number;
+  private _positionZ: number;
   
   private ipAddress: string | undefined;
   private portNumber: number | undefined
@@ -17,24 +16,26 @@ export class User{
     this.uuid = uuid;
     this.username = username;
     this.startedAt = new Date();
-    this.updatedAt = this.startedAt;
+    this._updatedAt = this.startedAt;
 
-    this.positionX = 0;
-    this.positionY = 0;
-    this.positionZ = 0;
+    this._positionX = 0;
+    this._positionY = 0;
+    this._positionZ = 0;
     this.ipAddress = undefined;
     this.portNumber = undefined;
   }
 
   public setPosition(x: number, y: number, z: number) {
-    this.positionX = x;
-    this.positionY = y;
-    this.positionZ = z;
+    this._positionX = x;
+    this._positionY = y;
+    this._positionZ = z;
+    this._updatedAt = new Date();
   }
 
   public setRemoteInfo(ipAddress: string, portNumber: number) {
     this.ipAddress = ipAddress;
     this.portNumber = portNumber;
+    this._updatedAt = new Date();
   }
 
   public getIpAddress(): string | undefined {
@@ -45,15 +46,19 @@ export class User{
     return this.portNumber;
   }
 
-  public getPositionX() {
-    return this.positionX;
+  get positionX() {
+    return this._positionX;
   }
 
-  public getPositionY() {
-    return this.positionY;
+  get positionY() {
+    return this._positionY;
   }
 
-  public getPositionZ() {
-    return this.positionZ;
+  get positionZ() {
+    return this._positionZ;
+  }
+
+  get updatedAt() {
+    return this._updatedAt;
   }
 }

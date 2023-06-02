@@ -36,9 +36,6 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "pg": "^8.11.0",
-    "postgres": "^3.3.4",
-    "typeorm": "^0.3.16",
     "typescript": "^5.0.4",
     "uuid": "^9.0.0"
   }
