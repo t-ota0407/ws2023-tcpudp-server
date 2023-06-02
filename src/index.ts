@@ -1,7 +1,6 @@
 import express from "express";
 import { UDPSocket } from "./udpSocket/udp";
 import { connectionRouter } from "./tcpHttp/routers/connectionRouter";
-import { DataSource, DataSourceOptions } from "typeorm";
 import { schedule } from "node-cron";
 import { SimpleDatabase } from "./database/simpleDatabase";
 
@@ -25,36 +24,9 @@ class Server {
   }
 
   private async startServer(): Promise<void> {
-    // await this.connectToDBServer();
     this.startUDPSocket();
     this.startTCPHTTP();
     this.schedulePeriodicTasks();
-  }
-
-  private async connectToDBServer(): Promise<void> {
-    const ormconfig: DataSourceOptions = {
-      "type": "postgres",
-      "host": process.env.DB_HOST,
-      "port": 3306,
-      "username": process.env.DB_USER,
-      "password": process.env.DB_PASS,
-      "database": process.env.DB_NAME,
-      "synchronize": true,
-      "logging": false,
-      "entities": [
-        "dist/src/entities/**/*.js"
-      ],
-      "migrations": [
-        "dist/src/migration/**/*.js"
-      ],
-      "subscribers": [
-        "dist/src/subscriber/**/*.js"
-      ],
-    };
-
-    const dataSource = new DataSource(ormconfig);
-  
-    await dataSource.initialize();
   }
 
   private startUDPSocket() {
