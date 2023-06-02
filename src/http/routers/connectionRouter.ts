@@ -2,8 +2,8 @@ import { Router, Request, Response } from "express";
 import { validationResult } from "express-validator";
 
 import * as connectionController from "../controllers/connectionController";
-import * as connectionValidator from "../validations/connectionValidator";
 import passport from "passport";
+import * as connectionValidator from "../validations/connectionValidator";
 
 export const connectionRouter = Router();
 
@@ -19,7 +19,7 @@ connectionRouter.post(
 
     connectionController.start(req, res);
   }
-)
+);
 
 connectionRouter.post(
   "/end",
@@ -39,4 +39,4 @@ connectionRouter.post(
 
     connectionController.end(req, res);
   }
-)
+);
