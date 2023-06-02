@@ -1,0 +1,3 @@
+TCP_PORT=YourTcpPort
+UDP_PORT=YourUdpPort
+JWT_SECRET=YourJwtSecret
