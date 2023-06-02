@@ -1,16 +1,16 @@
 import express from "express";
-import { UDPSocket } from "./udpSocket/udp";
-import { connectionRouter } from "./tcpHttp/routers/connectionRouter";
+import { UDP } from "./udp/udp";
+import { connectionRouter } from "./http/routers/connectionRouter";
 import { schedule } from "node-cron";
 import { SimpleDatabase } from "./database/simpleDatabase";
 
 class Server {
   private app: express.Application;
 
-  private readonly httpPort = Number(process.env.HTTP_PORT) || 8080;
-  private readonly socketPort = Number(process.env.SOCKET_PORT) || 3000
+  private readonly tcpPort = Number(process.env.TCP_PORT) || 8080;
+  private readonly udpPort = Number(process.env.UDP_PORT) || 3000;
 
-  private readonly udpSocket = new UDPSocket();
+  private readonly udp = new UDP();
 
   constructor() {
     this.app = express();
@@ -30,16 +30,16 @@ class Server {
   }
 
   private startUDPSocket() {
-    this.udpSocket.listen(this.socketPort, () => {
-      console.log(`UDP socket connection port is ${this.socketPort}`);
+    this.udp.listen(this.udpPort, () => {
+      console.log(`UDP connection port is ${this.udpPort}`);
     });
   }
 
   private startTCPHTTP() {
     this.app.use("/connection", connectionRouter);
 
-    this.app.listen(this.httpPort, () => {
-      console.log(`HTTP connection port is ${this.httpPort}`);
+    this.app.listen(this.tcpPort, () => {
+      console.log(`HTTP connection port is ${this.tcpPort}`);
     }).setTimeout(10 * 1000);
   }
 
@@ -50,8 +50,8 @@ class Server {
 
     schedule('* */1 * * * *', () => {
       if (SimpleDatabase.getInstance().getActiveUsersClone().length === 0) {
-        this.udpSocket.stopSendingDatagram();
-      };
+        this.udp.stopSendingDatagram();
+      }
     });
   }
 }

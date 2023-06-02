@@ -4,7 +4,7 @@ import { UDPUploadDatagram } from "./udpUploadDatagram";
 import { User } from "../database/entities/user";
 import { UDPDownloadDatagram } from "./udpDownloadDatagram";
 
-export class UDPSocket {
+export class UDP {
   private socket: dgram.Socket;
 
   private sendDatagramInterval: NodeJS.Timeout | null;
@@ -23,21 +23,20 @@ export class UDPSocket {
     });
 
     this.socket.on('connect', () => {
-      console.log('connected');
+      console.log('udp connected');
     });
 
     this.socket.on('message', (msg, rinfo) => {
-      console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
       const uploadedData = UDPUploadDatagram.fromJson(msg.toString());
       if (uploadedData === undefined) {
-        return console.log("parseに失敗したことを知らせるエラーを出す");
+        return console.log("server error:\nServer received unparsable datagram.");
       }
 
       const uuid = uploadedData.uuid;
 
       const user = SimpleDatabase.getInstance().FindUser(uuid);
       if (user === undefined) {
-        return console.log("postが叩けていないことを知らせるエラーを出す");
+        return console.log("server error:\nClient designated undefined uuid or inactive user's uuid.");
       }
 
       if (this.sendDatagramInterval === null) {
@@ -62,8 +61,7 @@ export class UDPSocket {
         const targetAddress = user.getIpAddress();
         this.socket.send(message, 0, message.length, targetPort, targetAddress);
       });
-      console.log("send");
-    }, 500);
+    }, 333);
   }
 
   public stopSendingDatagram() {
