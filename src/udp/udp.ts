@@ -43,7 +43,6 @@ export class UDP {
         this.startSendingDatagram();
       }
 
-      user.updatedAt = new Date();
       user.setPosition(uploadedData.x, uploadedData.y, uploadedData.z);
       user.setRemoteInfo(rinfo.address, rinfo.port);
     });
