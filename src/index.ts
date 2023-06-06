@@ -8,7 +8,7 @@ class Server {
   private app: express.Application;
 
   private readonly tcpPort = Number(process.env.TCP_PORT) || 8080;
-  private readonly udpPort = Number(process.env.UDP_PORT) || 3000;
+  private readonly udpPort = Number(process.env.UDP_PORT) || 55000;
 
   private readonly udp = new UDP();
 
