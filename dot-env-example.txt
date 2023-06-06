@@ -1,3 +1,5 @@
 TCP_PORT=YourTcpPort
 UDP_PORT=YourUdpPort
 JWT_SECRET=YourJwtSecret
+
+UDP_SEND_INTERVAL=333 # UDP datagram is sent out per second for the number of times equals to the result of dividing 1000 by this value.

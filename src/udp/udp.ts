@@ -70,7 +70,7 @@ export class UDP {
           console.error(`Error:\n${error}`);
         }
       }
-    }, 333);
+    }, Number(process.env.UDP_SEND_INTERVAL));
   }
 
   public stopSendingDatagram() {
