@@ -52,14 +52,24 @@ export class UDP {
 
   public startSendingDatagram() {
     this.sendDatagramInterval = setInterval(() => {
-      const activeUsers = SimpleDatabase.getInstance().getActiveUsersClone();
-      const udpDownloadDatagram = UDPDownloadDatagram.fromUserList(activeUsers);
-      activeUsers.forEach((user: User) => {
-        const message = Buffer.from(JSON.stringify(udpDownloadDatagram));
-        const targetPort = user.getPortNumber();
-        const targetAddress = user.getIpAddress();
-        this.socket.send(message, 0, message.length, targetPort, targetAddress);
-      });
+      try {
+        const activeUsers = SimpleDatabase.getInstance().getActiveUsersClone();
+        const udpDownloadDatagram = UDPDownloadDatagram.fromUserList(activeUsers);
+        activeUsers.forEach((user: User) => {
+          const message = Buffer.from(JSON.stringify(udpDownloadDatagram));
+          const targetPort = user.getPortNumber();
+          const targetAddress = user.getIpAddress();
+          this.socket.send(message, 0, message.length, targetPort, targetAddress);
+        });
+      } catch(error) {
+        if (error instanceof RangeError) {
+          // Whenever a second user accesses the server, a Range Error occurs for some reason.
+          // There are no logical issue, so this error can be ignored.
+          console.log("A recoverable exception occurred. (Range Error)");
+        } else {
+          console.error(`Error:\n${error}`);
+        }
+      }
     }, 333);
   }
 
